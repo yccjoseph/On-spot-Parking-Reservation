@@ -1,5 +1,5 @@
 const net = require('net');
-const ip = '172.29.95.130';
+const ip = '192.168.1.159';
 const port = 9999;
 
 const server = net.createServer(onClientConnected);

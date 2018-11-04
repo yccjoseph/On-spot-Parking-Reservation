@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import './App.css';
+// import socketIOClient from 'socket.io-client'
 
 import TimePicker from 'react-time-picker';
 import moment from 'moment';
 
-
 class App extends Component {
   state = {
-    time: moment().format('hh:mm'),
+    time: moment().format('hh:mm')
   }
  
   onChange = time => this.setState({ time })

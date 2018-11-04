@@ -6,24 +6,49 @@ import TimePicker from 'react-time-picker';
 import moment from 'moment';
 
 class App extends Component {
-  state = {
+  start = {
     time: moment().format('hh:mm')
   }
+
+  end = {
+    time: moment().add(2, 'hours').format('hh:mm')
+  }
+
  
   onChange = time => this.setState({ time })
 
   render() {
     return (
       <div className="App">
-      
-        Received<input type="text" name="FirstName"></input>
+        <br/><br/><br/><br/>
+        Occupied<input type="text" name="occupiedFlag"></input>
+        <br/><br/>
+        Reserved<input type="text" name="reservedFlag"></input>
+        <br/><br/><br/><br/>
+     
 
-        <TimePicker
+        <TimePicker name={"startTime"}
             onChange={this.onChange}
-            value={this.state.time}
+            value={this.start.time}
+            clearIcon={null}
+            disableClock={true}
+            locale={"en-US"}
+        />
+        <br/><br/>
+        <TimePicker name={"endTime"}
+            onChange={this.onChange}
+            value={this.end.time}
+            clearIcon={null}
+            disableClock={true}
+            locale={"en-US"}
         />
 
-        </div>
+        <br/><br/><br/><br/>
+
+        <button onClick={this.onClick}>
+          Send
+        </button>
+      </div>
       
 
     );

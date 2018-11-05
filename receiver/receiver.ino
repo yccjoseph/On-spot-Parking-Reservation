@@ -6,7 +6,7 @@
 // update these
 //#define WIFI_SSID "PowerDue"
 //#define WIFI_PASS "powerdue"
-//#define SERVER_IP "172.29.95.130"
+//#define SERVER_IP "172.29.95.130" // Joseph
 #define WIFI_SSID "CMUATINDIAN"
 #define WIFI_PASS "961961961"
 #define SERVER_IP "192.168.1.159"
@@ -14,43 +14,44 @@
 
 /*------------------------------------------------------------*/
 
-#define DATALEN 512
-char buf[DATALEN];
+#define DATALEN 2
+bool buf[DATALEN];
 
-void prepareBuffer(char ack){
-  buf[0] = ack;
+void prepareBuffer(bool empty, bool reserved){
+  buf[0] = empty;
+  buf[1] = reserved;
 }
 
 void WebStreamer(void * argument)
-{  
-  struct sockaddr_in serverAddr;  
-  socklen_t socklen;
-  memset(&serverAddr, 0, sizeof(serverAddr));
+{ 
+  while(1) { 
+    struct sockaddr_in serverAddr;  
+    socklen_t socklen;
+    memset(&serverAddr, 0, sizeof(serverAddr));
   
-  serverAddr.sin_len = sizeof(serverAddr);
-  serverAddr.sin_family = AF_INET;
-  serverAddr.sin_port = htons(SERVER_PORT);
-  inet_pton(AF_INET, SERVER_IP, &(serverAddr.sin_addr));
+    serverAddr.sin_len = sizeof(serverAddr);
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(SERVER_PORT);
+    inet_pton(AF_INET, SERVER_IP, &(serverAddr.sin_addr));
   
-  int s = lwip_socket(AF_INET, SOCK_STREAM, 0);
-  while(lwip_connect(s, (struct sockaddr *)&serverAddr, sizeof(serverAddr))){
-    SerialUSB.println("Failed to connect to server");
-    //assert(false);
-    delay(100);
+    int s = lwip_socket(AF_INET, SOCK_STREAM, 0);
+    while(lwip_connect(s, (struct sockaddr *)&serverAddr, sizeof(serverAddr))){
+      SerialUSB.println("Failed to connect to server");
+      //assert(false);
+      delay(100);
+    }
+  
+    prepareBuffer(true, true);
+    while(1){
+      // send data
+      lwip_write(s, buf, DATALEN);
+      SerialUSB.println(micros()-t);
+      delay(1000);
+    }
+    // close socket after everything is done
+    lwip_close(s);
+    SerialUSB.println("socket closed");
   }
-  
-  prepareBuffer('Y');
-  uint32_t t=0;
-  while(1){
-    // send data
-    t = micros();
-    lwip_write(s, buf, DATALEN);
-    SerialUSB.println(micros()-t);
-    delay(1000);
-  }
-  // close socket after everything is done
-  lwip_close(s);
-  SerialUSB.println("socket closed");
 }
 
 /*------------------------------------------------------------*/

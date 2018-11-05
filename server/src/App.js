@@ -88,7 +88,7 @@ class App extends Component {
         <br/><br/>
 
         <button onClick={this.handleClick}>
-          Check Avalibility
+          Check Availability
         </button>
       </div>
       

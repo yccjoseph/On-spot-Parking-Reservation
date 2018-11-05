@@ -14,12 +14,11 @@
 
 /*------------------------------------------------------------*/
 
-#define DATALEN 2
-bool buf[DATALEN];
+#define DATALEN 1
+char buf[DATALEN];
 
-void prepareBuffer(bool empty, bool reserved){
-  buf[0] = empty;
-  buf[1] = reserved;
+void prepareBuffer(char stat){
+  buf[0] = stat;
 }
 
 void WebStreamer(void * argument)
@@ -40,12 +39,14 @@ void WebStreamer(void * argument)
       //assert(false);
       delay(100);
     }
-  
-    prepareBuffer(true, true);
+    char dummy[4] = {'a', 'b', 'c', 'd'};
+    int i = 0;
     while(1){
       // send data
+      prepareBuffer(dummy[i % 4]);
       lwip_write(s, buf, DATALEN);
-      SerialUSB.println(micros()-t);
+      SerialUSB.println(buf[0]);
+      i++;
       delay(1000);
     }
     // close socket after everything is done

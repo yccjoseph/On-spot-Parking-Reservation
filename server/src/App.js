@@ -12,7 +12,8 @@ class App extends Component {
   constructor () {
     super()
     this.state = {
-      tag: 'init',
+      occupied: 'N/A',
+      reserved: 'N/A',
       time: moment().format('hh:mm')
     }
     this.handleClick = this.handleClick.bind(this)
@@ -23,7 +24,22 @@ class App extends Component {
       method: 'GET'
     });
     const body = await res.text();
-    this.setState({ tag: body});
+    switch (body) {
+      case 'a':
+        this.setState({ occupied: 'Yes', reserved: 'Yes'});
+        break;
+      case 'b':
+        this.setState({ occupied: 'Yes', reserved: 'No'});
+      break;
+      case 'c':
+        this.setState({ occupied: 'No', reserved: 'Yes'});
+        break;
+      case 'd':
+        this.setState({ occupied: 'No', reserved: 'No'});
+      break;
+      default:
+        this.setState({ occupied: 'N/A', reserved: 'N/A'})
+    }
   }
 
   onChange = time => {
@@ -40,13 +56,15 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <button onClick={this.handleClick}>receive{this.state.tag}</button>
-        <br/><br/><br/><br/>
-        Occupied<input type="text" name="occupiedFlag"></input>
+        <p>Parking Space #0</p>
+        <button onClick={this.handleClick}>Check Availability</button>
         <br/><br/>
-        Reserved<input type="text" name="reservedFlag"></input>
+        Occupied: <span>{this.state.occupied}</span>
+        <br/><br/>
+        Reserved: <span>{this.state.reserved}</span>
         <br/><br/><br/><br/>
-     
+
+        <p>Reserve Now!</p>
 
         <TimePicker name={"startTime"}
             onChange={this.onChange}
@@ -64,7 +82,7 @@ class App extends Component {
             locale={"en-US"}
         />
 
-        <br/><br/><br/><br/>
+        <br/><br/>
 
         <button onClick={this.onClick}>
           Send

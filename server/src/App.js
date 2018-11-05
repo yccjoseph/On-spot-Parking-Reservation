@@ -20,22 +20,26 @@ class App extends Component {
   }
   
   handleClick = async e => {
-    const res = await fetch('http://localhost:5000/api/hello', {
+    const res = await fetch('http://localhost:5000/api/check', {
       method: 'GET'
     });
     const body = await res.text();
     switch (body) {
       case 'a':
         this.setState({ occupied: 'Yes', reserved: 'Yes'});
+        alert('Sorry, this parking spot is not available in selected time slot. Choose another one!');
         break;
       case 'b':
         this.setState({ occupied: 'Yes', reserved: 'No'});
+        alert('Sorry, this parking spot is not available in selected time slot. Choose another one!');
       break;
       case 'c':
         this.setState({ occupied: 'No', reserved: 'Yes'});
+        alert('Sorry, this parking spot is not available in selected time slot. Choose another one!');
         break;
       case 'd':
         this.setState({ occupied: 'No', reserved: 'No'});
+        alert('You have reserved the spot. Please be on time to park');
       break;
       default:
         this.setState({ occupied: 'N/A', reserved: 'N/A'})
@@ -57,7 +61,6 @@ class App extends Component {
     return (
       <div className="App">
         <p>Parking Space #0</p>
-        <button onClick={this.handleClick}>Check Availability</button>
         <br/><br/>
         Occupied: <span>{this.state.occupied}</span>
         <br/><br/>
@@ -84,8 +87,8 @@ class App extends Component {
 
         <br/><br/>
 
-        <button onClick={this.onClick}>
-          Send
+        <button onClick={this.handleClick}>
+          Check Avalibility
         </button>
       </div>
       

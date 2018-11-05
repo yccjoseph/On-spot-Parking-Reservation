@@ -24,7 +24,7 @@ server.listen(port, ip, function() {
   console.log('server listening on %j', server.address());
 });
 
-app.get('/api/hello', (req, res) => {
+app.get('/api/check', (req, res) => {
   res.send(d);
   console.log(req.body);
 })
@@ -36,40 +36,7 @@ function onClientConnected(socket) {
   socket.on('data', (data) => {
     d = data;
     console.log('data sent from %s : %s', remoteAddr, d);
-    // axios({
-    //   method: 'post',
-    //   url: 'http://localhost:3000/',
-    //   data: {
-    //     occupied: 'yes'
-    //   }
-    // })
-    // .then(function (response) {
-    //   // console.log('data sent from %s : %s', remoteAddr, data);
-    //   // console.log(response);
-    // })
-    // .catch(function (error) {
-    //   /*
-    //   if (error.response) {
-    //     // The request was made and the server responded with a status code
-    //     // that falls out of the range of 2xx
-    //     console.log(error.response.data);
-    //     console.log(error.response.status);
-    //     console.log(error.response.headers);
-    //   } else if (error.request) {
-    //     // The request was made but no response was received
-    //     // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
-    //     // http.ClientRequest in node.js
-    //     console.log("No response...");
-    //     console.log(error.request);
-    //   } else {
-    //     // Something happened in setting up the request that triggered an Error
-    //     console.log("Unknown error")
-    //     console.log('Error', error.message);
-    //   }
-    //   console.log(error.config);
-    //   */
-    // });
-    socket.write(data);
+    // socket.write(data);
   });
 
   socket.on('close', () => {

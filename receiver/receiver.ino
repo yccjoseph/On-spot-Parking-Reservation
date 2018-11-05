@@ -17,13 +17,48 @@
 #define DATALEN 1
 char buf[DATALEN];
 
+SemaphoreHandle_t semSense, semReport;
+QueueHandle_t xQueue = NULL;
+
+void sense(void * arg) {
+  while(1) {
+    if (SerialUSB.available()) {
+      xSemaphoreTake(semSense, portMAX_DELAY);
+      String sense = SerialUSB.readString();
+      sense.trim();
+      char stat = NULL;
+      if (sense == "park") {
+        digitalWrite(6,HIGH);
+        digitalWrite(7,LOW);
+        digitalWrite(8,LOW);
+        stat = 'b';
+        xQueueSend(xQueue, &stat, portMAX_DELAY);
+        
+      } else if (sense == "leave") {
+        digitalWrite(6,LOW);
+        digitalWrite(7,HIGH);
+        digitalWrite(8,LOW);
+        stat = 'd';
+        xQueueSend(xQueue, &stat, portMAX_DELAY);
+      }
+      xSemaphoreGive(semReport);
+    }
+    
+  }
+}
+
 void prepareBuffer(char stat){
   buf[0] = stat;
 }
 
-void WebStreamer(void * argument)
+void WebStreamer(void * arg)
 { 
   while(1) { 
+    xSemaphoreTake(semReport, portMAX_DELAY);
+    
+    char st;
+    xQueueReceive(xQueue, &st, portMAX_DELAY);
+    
     struct sockaddr_in serverAddr;  
     socklen_t socklen;
     memset(&serverAddr, 0, sizeof(serverAddr));
@@ -36,22 +71,18 @@ void WebStreamer(void * argument)
     int s = lwip_socket(AF_INET, SOCK_STREAM, 0);
     while(lwip_connect(s, (struct sockaddr *)&serverAddr, sizeof(serverAddr))){
       SerialUSB.println("Failed to connect to server");
-      //assert(false);
       delay(100);
     }
-    char dummy[4] = {'a', 'b', 'c', 'd'};
-    int i = 0;
-    while(1){
-      // send data
-      prepareBuffer(dummy[i % 4]);
-      lwip_write(s, buf, DATALEN);
-      SerialUSB.println(buf[0]);
-      i++;
-      delay(1000);
-    }
+    
+    // send data
+    prepareBuffer(st);
+    lwip_write(s, buf, DATALEN);
+    SerialUSB.println(buf[0]);
+    
     // close socket after everything is done
     lwip_close(s);
     SerialUSB.println("socket closed");
+    xSemaphoreGive(semSense);
   }
 }
 
@@ -80,8 +111,13 @@ void onReady(){
   SerialUSB.println("Device ready");  
   SerialUSB.print("Device IP: ");
   SerialUSB.println(IPAddress(PowerDueWiFi.getDeviceIP()));  
-  
+  semSense = xSemaphoreCreateCounting(1, 1);
+  semReport = xSemaphoreCreateCounting(1, 0);
+
+  xTaskCreate(sense, "Sense", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   xTaskCreate(WebStreamer, "WebStreamer", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+
+  xQueue = xQueueCreate(1, 1);
 }
 
 void setup() {
@@ -93,7 +129,7 @@ void setup() {
 
   PowerDueWiFi.init(WIFI_SSID, WIFI_PASS);
   PowerDueWiFi.setCallbacks(onReady, onError);
-   
+  
   vTaskStartScheduler();
   SerialUSB.println("Insufficient RAM");
   while(1);

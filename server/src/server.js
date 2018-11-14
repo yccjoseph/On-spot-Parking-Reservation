@@ -3,7 +3,7 @@ const express = require('express');
 const path = require ('path');
 const axios = require('axios');
 const bodyParser = require('body-parser');
-const ip = '10.230.12.127';
+const ip = '172.29.95.130';
 const port = 9999;
 const nodePort = 5000;
 

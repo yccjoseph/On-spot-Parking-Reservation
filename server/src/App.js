@@ -18,8 +18,8 @@ class App extends Component {
     }
     this.handleClick = this.handleClick.bind(this)
   }
-  
-  handleClick = async e => {
+
+  getStatus = async e => {
     const res = await fetch('http://localhost:5000/api/check', {
       method: 'GET'
     });
@@ -27,27 +27,37 @@ class App extends Component {
     switch (body) {
       case 'a':
         this.setState({ occupied: 'Yes', reserved: 'Yes'});
-        alert('Sorry, this parking spot is not available in selected time slot. Choose another one!');
         break;
       case 'b':
         this.setState({ occupied: 'Yes', reserved: 'No'});
-        alert('Sorry, this parking spot is not available in selected time slot. Choose another one!');
       break;
       case 'c':
         this.setState({ occupied: 'No', reserved: 'Yes'});
-        alert('Sorry, this parking spot is not available in selected time slot. Choose another one!');
         break;
       case 'd':
         this.setState({ occupied: 'No', reserved: 'No'});
-        alert('You have reserved the spot. Please be on time to park');
       break;
       default:
         this.setState({ occupied: 'N/A', reserved: 'N/A'})
     }
   }
+  componentDidMount = async e => {
+    await this.getStatus();
+  }
+  
+  handleClick = async e => {
+    await this.getStatus();
+    if (this.state.occupied === 'Yes' && this.state.reserved === 'No') {
+      alert('Sorry, this time slot is unavailable for reservation. Please choose another time.');
+    }
+    else if (this.state.occupied === 'No' && this.state.reserved === 'No') {
+      alert('Hurray! This spot is reserved for you.')
+    }
+  }
 
   onChange = time => {
     this.setState({ time: time })
+    this.getStatus();
   }
   start = {
     time: moment().format('HH:mm')
@@ -69,9 +79,9 @@ class App extends Component {
           <option value="space4">Space #4</option>
         </select>
         <br/><br/>
-        Occupied: <span>{this.state.occupied}</span>
+        Occupied: <span onChange={this.onClick}>{this.state.occupied}</span>
         <br/><br/>
-        Reserved: <span>{this.state.reserved}</span>
+        Reserved: <span onChange={this.onClick}>{this.state.reserved}</span>
         <br/><br/><br/><br/>
 
         <p>Reserve Now!</p>

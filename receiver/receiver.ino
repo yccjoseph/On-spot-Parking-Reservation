@@ -9,6 +9,7 @@
 #define SERVER_IP "172.29.95.130" // Joseph
 // #define SERVER_IP "10.230.12.127" // Sissi
 #define SERVER_PORT 9999
+#define REDPIN A4
 
 /*------------------------------------------------------------*/
 
@@ -20,28 +21,31 @@ QueueHandle_t xQueue = NULL;
 
 void sense(void * arg) {
   while(1) {
-    if (SerialUSB.available()) {
-      xSemaphoreTake(semSense, portMAX_DELAY);
-      String sense = SerialUSB.readString();
-      sense.trim();
-      char stat = NULL;
-      if (sense == "park") {
-        digitalWrite(6,HIGH);
-        digitalWrite(7,LOW);
-        digitalWrite(8,LOW);
-        stat = 'b';
-        xQueueSend(xQueue, &stat, portMAX_DELAY);
-        
-      } else if (sense == "leave") {
-        digitalWrite(6,LOW);
-        digitalWrite(7,HIGH);
-        digitalWrite(8,LOW);
-        stat = 'd';
-        xQueueSend(xQueue, &stat, portMAX_DELAY);
-      }
-      xSemaphoreGive(semReport);
-    }
-    
+    int i = analogRead(REDPIN);
+    SerialUSB.println(i);
+    int val = (6762 / (i - 9)) - 4;
+    //SerialUSB.println(val);
+//    if (SerialUSB.available()) {
+//      xSemaphoreTake(semSense, portMAX_DELAY);
+//      String sense = SerialUSB.readString();
+//      sense.trim();
+//      char stat = NULL;
+//      if (sense == "park") {
+//        digitalWrite(6,HIGH);
+//        digitalWrite(7,LOW);
+//        digitalWrite(8,LOW);
+//        stat = 'b';
+//        xQueueSend(xQueue, &stat, portMAX_DELAY);
+//        
+//      } else if (sense == "leave") {
+//        digitalWrite(6,LOW);
+//        digitalWrite(7,HIGH);
+//        digitalWrite(8,LOW);
+//        stat = 'd';
+//        xQueueSend(xQueue, &stat, portMAX_DELAY);
+//      }
+//      xSemaphoreGive(semReport);
+//    } 
   }
 }
 
@@ -119,6 +123,7 @@ void onReady(){
 }
 
 void setup() {
+  pinMode(REDPIN, OUTPUT);
   SerialUSB.begin(0);
   while(!SerialUSB);
   

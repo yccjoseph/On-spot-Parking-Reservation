@@ -8,9 +8,6 @@
 #define WIFI_PASS "powerdue"
 //#define SERVER_IP "172.29.95.130" // Joseph
 #define SERVER_IP "10.230.12.127" // Sissi
-//#define WIFI_SSID "CMUATINDIAN"
-//#define WIFI_PASS "961961961"
-//#define SERVER_IP "192.168.1.159"
 #define SERVER_PORT 9999
 
 /*------------------------------------------------------------*/

@@ -14,7 +14,7 @@ class App extends Component {
     this.state = {
       occupied: 'N/A',
       reserved: 'N/A',
-      time: moment().format('hh:mm')
+      time: moment().format('HH:mm')
     }
     this.handleClick = this.handleClick.bind(this)
   }
@@ -50,17 +50,24 @@ class App extends Component {
     this.setState({ time: time })
   }
   start = {
-    time: moment().format('hh:mm')
+    time: moment().format('HH:mm')
   }
 
   end = {
-    time: moment().add(2, 'hours').format('hh:mm')
+    time: moment().add(2, 'hours').format('HH:mm')
   }
 
   render() {
     return (
       <div className="App">
-        <p>Parking Space #0</p>
+        <p>Parking Space</p>
+        <select>
+          <option selected value="space0">Space #0</option>
+          <option value="space1">Space #1</option>
+          <option value="space2">Space #2</option>
+          <option value="space3">Space #3</option>
+          <option value="space4">Space #4</option>
+        </select>
         <br/><br/>
         Occupied: <span>{this.state.occupied}</span>
         <br/><br/>

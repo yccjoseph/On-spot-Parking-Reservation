@@ -2,8 +2,8 @@
 #include <FreeRTOS_ARM.h>
 #include <IPAddress.h>
 #include <PowerDueWiFi.h>
+#include <LoRa.h>
 
-// update these
 #define WIFI_SSID "PowerDue"
 #define WIFI_PASS "powerdue"
 #define SERVER_IP "172.29.95.130" // Joseph
@@ -11,46 +11,40 @@
 #define SERVER_PORT 9999
 #define REDPIN A4
 
+// LoRa parameters
+#define FREQUENCY         915E6
+#define BANDWIDTH         125000
+#define TX_POWER          20
+#define SPREADING_FACTOR  7
+
 /*------------------------------------------------------------*/
 
 #define DATALEN 1
 char buf[DATALEN];
 
-SemaphoreHandle_t semSense, semReport;
+SemaphoreHandle_t semReport, semLoRa;
 QueueHandle_t xQueue = NULL;
-
-void sense(void * arg) {
-  while(1) {
-    int i = analogRead(REDPIN);
-    SerialUSB.println(i);
-    int val = (6762 / (i - 9)) - 4;
-    //SerialUSB.println(val);
-//    if (SerialUSB.available()) {
-//      xSemaphoreTake(semSense, portMAX_DELAY);
-//      String sense = SerialUSB.readString();
-//      sense.trim();
-//      char stat = NULL;
-//      if (sense == "park") {
-//        digitalWrite(6,HIGH);
-//        digitalWrite(7,LOW);
-//        digitalWrite(8,LOW);
-//        stat = 'b';
-//        xQueueSend(xQueue, &stat, portMAX_DELAY);
-//        
-//      } else if (sense == "leave") {
-//        digitalWrite(6,LOW);
-//        digitalWrite(7,HIGH);
-//        digitalWrite(8,LOW);
-//        stat = 'd';
-//        xQueueSend(xQueue, &stat, portMAX_DELAY);
-//      }
-//      xSemaphoreGive(semReport);
-//    } 
-  }
-}
 
 void prepareBuffer(char stat){
   buf[0] = stat;
+}
+
+void LoRaRead(void * arg){
+  while(1){
+    SerialUSB.println("Prepare to receive LoRa......");
+    xSemaphoreTake(semLoRa, portMAX_DELAY);
+    while(1) {
+      int packetSize = LoRa.parsePacket();
+      if(packetSize){
+          LoRa.receive(sizeof(int));
+          char status = LoRa.read();
+          SerialUSB.print("Receive sensing status: ");
+          SerialUSB.println(status);
+          xQueueSend(xQueue, &status, portMAX_DELAY);
+          xSemaphoreGive(semReport);
+      }
+    }
+  }
 }
 
 void WebStreamer(void * arg)
@@ -79,12 +73,13 @@ void WebStreamer(void * arg)
     // send data
     prepareBuffer(st);
     lwip_write(s, buf, DATALEN);
+    SerialUSB.print("Status sent to server: ");
     SerialUSB.println(buf[0]);
     
     // close socket after everything is done
     lwip_close(s);
     SerialUSB.println("socket closed");
-    xSemaphoreGive(semSense);
+    xSemaphoreGive(semLoRa);
   }
 }
 
@@ -113,10 +108,10 @@ void onReady(){
   SerialUSB.println("Device ready");  
   SerialUSB.print("Device IP: ");
   SerialUSB.println(IPAddress(PowerDueWiFi.getDeviceIP()));  
-  semSense = xSemaphoreCreateCounting(1, 1);
+  semLoRa = xSemaphoreCreateCounting(1, 1);
   semReport = xSemaphoreCreateCounting(1, 0);
 
-  xTaskCreate(sense, "Sense", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+  xTaskCreate(LoRaRead, "LoRaRead", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
   xTaskCreate(WebStreamer, "WebStreamer", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
   xQueue = xQueueCreate(1, 1);
@@ -130,8 +125,16 @@ void setup() {
   initPins();
   turnOffLED();
 
+  LoRa.setPins(22, 59, 51);
+  LoRa.begin(FREQUENCY);
+  LoRa.setTxPower(TX_POWER);
+  LoRa.setSpreadingFactor(SPREADING_FACTOR);
+  LoRa.setSignalBandwidth(BANDWIDTH);
+  LoRa.setSyncWord(0x2b);
+
   PowerDueWiFi.init(WIFI_SSID, WIFI_PASS);
   PowerDueWiFi.setCallbacks(onReady, onError);
+//  onReady();
   
   vTaskStartScheduler();
   SerialUSB.println("Insufficient RAM");

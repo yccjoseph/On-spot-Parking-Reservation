@@ -6,8 +6,8 @@
 
 #define WIFI_SSID "PowerDue"
 #define WIFI_PASS "powerdue"
-#define SERVER_IP "172.29.95.130" // Joseph
-// #define SERVER_IP "10.230.12.127" // Sissi
+// #define SERVER_IP "172.29.95.130" // Joseph
+#define SERVER_IP "10.230.12.127" // Sissi
 #define SERVER_PORT 9999
 #define REDPIN A4
 

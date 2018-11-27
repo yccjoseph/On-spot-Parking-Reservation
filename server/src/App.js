@@ -12,8 +12,8 @@ class App extends Component {
   constructor () {
     super()
     this.state = {
-      occupied: 'N/A',
-      reserved: 'N/A',
+      occupied: 'No',
+      reserved: 'No',
       time: moment().format('HH:mm')
     }
     this.check_handleClick = this.check_handleClick.bind(this)
@@ -35,7 +35,7 @@ class App extends Component {
         this.setState({ occupied: 'No'});
       break;
       default:
-        this.setState({ occupied: 'N/A', reserved: 'N/A'})
+        this.setState({ occupied: 'No', reserved: 'No'})
     }
   }
   componentDidMount = async e => {
@@ -61,12 +61,12 @@ class App extends Component {
     }
     else if (this.state.occupied === 'No' && this.state.reserved === 'No') {
       alert('Hurray! This spot is reserved for you.')
-      this.setState({ occupied: 'Yes', reserved: 'No'});
+      this.setState({ occupied: 'No', reserved: 'Yes'});
     }
   }
 
   park_handleClick = () => {
-    this.setState({ occupied: 'Yes', reserved: 'No'});
+    this.setState({ occupied: 'Yes', reserved: this.state.reserved});
   }
 
   leave_handleClick = () => {

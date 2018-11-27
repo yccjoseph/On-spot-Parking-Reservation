@@ -35,11 +35,25 @@ void LoRaRead(void * arg){
     xSemaphoreTake(semLoRa, portMAX_DELAY);
     while(1) {
       int packetSize = LoRa.parsePacket();
+      
       if(packetSize){
-          LoRa.receive(sizeof(int));
-          char status = LoRa.read();
+          SerialUSB.println(packetSize);
+          LoRa.receive();
           SerialUSB.print("Receive sensing status: ");
+          
+//          char status[packetSize];
+          LoRa.read();
+          LoRa.read();
+          LoRa.read();
+          LoRa.read();
+          char status = LoRa.read();
           SerialUSB.println(status);
+//          for (int i = 0; i < packetSize; i++) {
+//            status[i] = LoRa.read();
+//            
+//            SerialUSB.println(status[i]);
+//          }
+
           xQueueSend(xQueue, &status, portMAX_DELAY);
           xSemaphoreGive(semReport);
       }
@@ -130,9 +144,10 @@ void setup() {
   LoRa.setTxPower(TX_POWER);
   LoRa.setSpreadingFactor(SPREADING_FACTOR);
   LoRa.setSignalBandwidth(BANDWIDTH);
-  LoRa.setSyncWord(0x2b);
+//  LoRa.setSyncWord(0x2b);
 
   PowerDueWiFi.init(WIFI_SSID, WIFI_PASS);
+  SerialUSB.println("here");
   PowerDueWiFi.setCallbacks(onReady, onError);
 //  onReady();
   

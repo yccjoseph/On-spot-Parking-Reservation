@@ -22,6 +22,8 @@ SharpIR sensor( SharpIR::GP2Y0A21YK0F, A0 );
 // Singleton instance of the radio driver
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 
+char status = 'b';  // unoccupied
+
 void setup() 
 {
   pinMode(RFM95_RST, OUTPUT);
@@ -29,9 +31,6 @@ void setup()
 
   while (!Serial);
   Serial.begin(9600);
-  delay(100);
-
-  Serial.println("Arduino LoRa TX Test!");
 
   // manual reset
   digitalWrite(RFM95_RST, LOW);
@@ -43,14 +42,14 @@ void setup()
     Serial.println("LoRa radio init failed");
     while (1);
   }
-  Serial.println("LoRa radio init OK!");
+//  Serial.println("LoRa radio init OK!");
 
   // Defaults after init are 434.0MHz, modulation GFSK_Rb250Fd250, +13dbM
   if (!rf95.setFrequency(RF95_FREQ)) {
     Serial.println("setFrequency failed");
     while (1);
   }
-  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+//  Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
   
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 
@@ -64,7 +63,7 @@ void setup()
 
 void loop()
 {
-  Serial.println("Sending to rf95_server");
+//  Serial.println("Sending to rf95_server");
   // Send a message to rf95_server
   
 //  char radiopacket[10] = "Hello World #      ";
@@ -72,15 +71,32 @@ void loop()
 //  Serial.print("Sending ");
 //  radiopacket[19] = 0;
   int distance = sensor.getDistance(); //Calculate the distance in centimeters and store the value in a variable
-  Serial.println(distance);
-  char radiopacket[10] = "";
-  itoa(distance, radiopacket, 10);
+  Serial.print(distance); 
+//  Serial.print(" --> ");
+  if (distance < 40) {
+    if (status == 'b') {
+      status = 'a';
+      rf95.send("a", sizeof(char));
+      Serial.print(" --> ");
+      Serial.print(status);
+    }
+  } else {
+    if (status == 'a') {
+      status = 'b';
+      rf95.send("b", sizeof(char));
+      Serial.print(" --> ");
+      Serial.println(status);
+    }
+  }
+  Serial.println();
+//  char radiopacket[10] = "";
+//  itoa(distance, radiopacket, 10);
   
-  Serial.println("Sending..."); delay(10);
-  rf95.send(radiopacket, sizeof(radiopacket));
+//  Serial.println("Sending..."); delay(10);
+//  rf95.send(radiopacket, sizeof(radiopacket));
 
 //  Serial.println("Waiting for packet to complete..."); delay(10);
-  rf95.waitPacketSent();
+//  rf95.waitPacketSent();
 //  // Now wait for a reply
 //  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
 //  uint8_t len = sizeof(buf);
@@ -105,5 +121,5 @@ void loop()
 //  {
 //    Serial.println("No reply, is there a listener around?");
 //  }
-  delay(500);
+  delay(2000);
 }

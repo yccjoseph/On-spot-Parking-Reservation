@@ -37,22 +37,15 @@ void LoRaRead(void * arg){
       int packetSize = LoRa.parsePacket();
       
       if(packetSize){
-          SerialUSB.println(packetSize);
           LoRa.receive();
           SerialUSB.print("Receive sensing status: ");
           
-//          char status[packetSize];
           LoRa.read();
           LoRa.read();
           LoRa.read();
           LoRa.read();
           char status = LoRa.read();
           SerialUSB.println(status);
-//          for (int i = 0; i < packetSize; i++) {
-//            status[i] = LoRa.read();
-//            
-//            SerialUSB.println(status[i]);
-//          }
 
           xQueueSend(xQueue, &status, portMAX_DELAY);
           xSemaphoreGive(semReport);
@@ -147,7 +140,6 @@ void setup() {
 //  LoRa.setSyncWord(0x2b);
 
   PowerDueWiFi.init(WIFI_SSID, WIFI_PASS);
-  SerialUSB.println("here");
   PowerDueWiFi.setCallbacks(onReady, onError);
 //  onReady();
   

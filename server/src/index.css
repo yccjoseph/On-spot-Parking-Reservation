@@ -385,6 +385,10 @@ height:auto;
 float:right;
 }
 
+.popupS-buttons {
+    text-align: center;
+}
+
 .popupS-button-ok {
     width: 80px;
     font-size: 12px;

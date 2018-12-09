@@ -37,17 +37,15 @@ void LoRaRead(void * arg){
       int packetSize = LoRa.parsePacket();
       
       if(packetSize){
+          char status;
           LoRa.receive();
           SerialUSB.print("Receive sensing status: ");
           
-          for (int i = 0; i < 4; i ++) {
-            char h1 = LoRa.read();
-            for (int i = 0; i < 8; i++) {
-              SerialUSB.print(bitRead(h1, 7 - i));
-            }
-            SerialUSB.println();
-          }
-          char status = LoRa.read();
+          LoRa.read();
+          LoRa.read();
+          LoRa.read();
+          LoRa.read();
+          status = LoRa.read();
           SerialUSB.println(status);
 
           xQueueSend(xQueue, &status, portMAX_DELAY);

@@ -6,8 +6,8 @@
 
 #define WIFI_SSID "PowerDue"
 #define WIFI_PASS "powerdue"
-// #define SERVER_IP "172.29.95.130" // Joseph
-#define SERVER_IP "10.230.12.127" // Sissi
+#define SERVER_IP "172.29.95.130" // Joseph
+// #define SERVER_IP "10.230.12.127" // Sissi
 #define SERVER_PORT 9999
 #define REDPIN A4
 
@@ -31,8 +31,8 @@ void prepareBuffer(char stat){
 
 void LoRaRead(void * arg){
   while(1){
-    SerialUSB.println("Prepare to receive LoRa......");
     xSemaphoreTake(semLoRa, portMAX_DELAY);
+    SerialUSB.println("Prepare to receive LoRa......");
     while(1) {
       int packetSize = LoRa.parsePacket();
       
@@ -40,10 +40,13 @@ void LoRaRead(void * arg){
           LoRa.receive();
           SerialUSB.print("Receive sensing status: ");
           
-          LoRa.read();
-          LoRa.read();
-          LoRa.read();
-          LoRa.read();
+          for (int i = 0; i < 4; i ++) {
+            char h1 = LoRa.read();
+            for (int i = 0; i < 8; i++) {
+              SerialUSB.print(bitRead(h1, 7 - i));
+            }
+            SerialUSB.println();
+          }
           char status = LoRa.read();
           SerialUSB.println(status);
 

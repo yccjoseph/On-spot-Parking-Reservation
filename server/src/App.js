@@ -6,6 +6,8 @@ import './App.css';
 import TimePicker from 'rc-time-picker';
 import moment from 'moment';
 
+const ip = '172.29.95.130'; // Joseph
+// const ip = '10.230.12.127'; // Sissi
 const format = 'h:mm a';
 
 var popupS = require('popups');
@@ -25,7 +27,7 @@ class App extends Component {
   }
 
   getStatus = async e => {
-    const res = await fetch('http://localhost:5000/api/check', {
+    const res = await fetch('http://' + ip +':5000/api/check', {
       method: 'GET'
     });
     const body = await res.text();
@@ -46,7 +48,7 @@ class App extends Component {
   
   // Check Availability: checks status from device
   check_handleClick = async e => {
-    // await this.getStatus();
+    await this.getStatus();
     if (this.state.occupied === 'Yes' || this.state.reserved === 'Yes') {
       popupS.alert({
         content: 'Sorry! Spot not available'
@@ -61,7 +63,9 @@ class App extends Component {
                         content: 'Great! Your spot is reserved.\nPlease be on time!'
                 });
                 this.setState({ occupied: 'No', reserved: 'Yes'});
-                document.getElementById("park").className = "btn-hover color-2";
+                var park = document.getElementById("park");
+                park.className = "btn-hover color-2";
+                park.disabled = false;
         }
     });
     }
@@ -80,15 +84,26 @@ class App extends Component {
   }
 
   park_handleClick = () => {
-    this.setState({ occupied: 'Yes', reserved: this.state.reserved});
-    document.getElementById("park").className = "btn-hover";
-    document.getElementById("leave").className = "btn-hover color-2";
+    var park = document.getElementById("park");
+    var leave = document.getElementById("leave");
+    if (this.state.occupied === 'No' && this.state.reserved === 'No') {
+        park.disabled = true;
+    }
+    else {
+      this.setState({ occupied: 'Yes', reserved: this.state.reserved});
+      park.className = "btn-hover btn-hidden";
+      leave.className = "btn-hover color-7";
+    }
+
   }
 
   leave_handleClick = () => {
     this.setState({ occupied: 'No', reserved: 'No'});
-    document.getElementById("park").className = "btn-hover";
-    document.getElementById("leave").className = "btn-hover";
+    var park = document.getElementById("park");
+    var leave = document.getElementById("leave");
+    park.className = "btn-hover";
+    park.disabled = true;
+    leave.className = "btn-hover btn-hidden";
   }
 
   onChange = time => {
@@ -155,15 +170,12 @@ class App extends Component {
           Park
         </button>
 
-        <button id='leave' class='btn-hover' onClick={this.leave_handleClick}>
+        <button id='leave' class='btn-hover btn-hidden' onClick={this.leave_handleClick}>
           Leave
         </button>
 
         <br/><br/><br/><br/>
-        <br/><br/>
-        Occupied: <span onChange={this.onClick}>{this.state.occupied}</span>
-        <br/><br/>
-        Reserved: <span onChange={this.onClick}>{this.state.reserved}</span>
+        <span class="footer">Copyright &copy; 2018 OnSpot Parking Reservation</span>
         
       </div>
       
@@ -171,5 +183,13 @@ class App extends Component {
     );
   }
 }
+
+// Reserved for state check
+/* 
+<br/><br/>
+Occupied: <span onChange={this.onClick}>{this.state.occupied}</span>
+<br/><br/>
+Reserved: <span onChange={this.onClick}>{this.state.reserved}</span> 
+*/
 
 export default App;
